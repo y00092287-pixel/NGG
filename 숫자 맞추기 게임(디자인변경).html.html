@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>숫자 맞추기 게임</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root {
+    --bg: #fdf3f6;
+    --card: #ffffff;
+    --line: #f4e1e8;
+    --soft: #fcf7f9;
+    --accent: #e2698f;
+    --accent-dark: #d1527b;
+    --accent-light: #fbe3eb;
+    --text: #3b2e34;
+    --muted: #8f7d86;
+
+    --up: #4f63c2;
+    --up-bg: #f0f3ff;
+    --down: #d3446f;
+    --down-bg: #fff0f4;
+    --ok: #25885f;
+    --ok-bg: #edf9f3;
+    --warn: #a8680f;
+    --warn-bg: #fff8e9;
+
+    --font: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 16px;
+    background: var(--bg);
+    font-family: var(--font);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 440px;
+    background: var(--card);
+    border-radius: 24px;
+    padding: 40px 28px 28px;
+    border: 1px solid var(--line);
+    box-shadow: 0 12px 32px rgba(214, 110, 150, 0.08);
+    text-align: center;
+  }
+
+  h1 {
+    font-weight: 700;
+    font-size: clamp(1.6rem, 6vw, 1.9rem);
+    color: var(--text);
+    letter-spacing: -0.03em;
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+  h1 .heart { color: var(--accent); font-size: 0.6em; vertical-align: middle; margin-left: 2px; }
+
+  .desc {
+    color: var(--muted);
+    font-size: 0.97rem;
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+  .desc strong { color: var(--accent-dark); font-weight: 600; }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  input[type="number"] {
+    flex: 1;
+    min-width: 0;
+    height: 54px;
+    font-family: var(--font);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+    background: var(--soft);
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::placeholder { color: #cdb9c2; font-weight: 400; }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="number"]:focus {
+    background: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(226, 105, 143, 0.12);
+  }
+  input[type="number"]:disabled { background: #f7f1f3; color: #c4b2ba; }
+
+  button {
+    height: 54px;
+    border: none;
+    border-radius: 14px;
+    font-family: var(--font);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s, opacity 0.2s;
+    touch-action: manipulation;
+  }
+  button:active { transform: scale(0.98); }
+
+  #guessBtn {
+    min-width: 96px;
+    padding: 0 26px;
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(226, 105, 143, 0.22);
+  }
+  #guessBtn:hover:not(:disabled) {
+    background: var(--accent-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(226, 105, 143, 0.3);
+  }
+  #guessBtn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+  #restartBtn {
+    width: 100%;
+    height: 50px;
+    margin-top: 24px;
+    background: #fff;
+    color: var(--accent-dark);
+    border: 1.5px solid var(--line);
+  }
+  #restartBtn:hover {
+    background: var(--soft);
+    border-color: #efc6d4;
+  }
+  #restartBtn.highlight {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(226, 105, 143, 0.22);
+  }
+  #restartBtn.highlight:hover {
+    background: var(--accent-dark);
+    border-color: var(--accent-dark);
+  }
+
+  button:focus-visible {
+    outline: 3px solid rgba(226, 105, 143, 0.35);
+    outline-offset: 2px;
+  }
+
+  .message {
+    margin-top: 22px;
+    padding: 18px 16px;
+    border-radius: 16px;
+    font-size: clamp(1.05rem, 4.2vw, 1.2rem);
+    font-weight: 600;
+    line-height: 1.45;
+    background: var(--soft);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    word-break: keep-all;
+  }
+  .message.up   { background: var(--up-bg);   color: var(--up);   border-color: #dde3ff; }
+  .message.down { background: var(--down-bg); color: var(--down); border-color: #fddbe5; }
+  .message.win  { background: var(--ok-bg);   color: var(--ok);   border-color: #cdeedd; }
+  .message.warn { background: var(--warn-bg); color: var(--warn); border-color: #fbe8c2; }
+  .message.pop  { animation: pop 0.25s ease; }
+
+  @keyframes pop {
+    0%   { transform: scale(0.98); }
+    100% { transform: scale(1); }
+  }
+
+  .stats {
+    margin-top: 18px;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+  .stats b {
+    margin: 0 2px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+  }
+
+  .history {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    min-height: 30px;
+  }
+  .chip {
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  .chip.up   { background: var(--up-bg);   color: var(--up); }
+  .chip.down { background: var(--down-bg); color: var(--down); }
+  .chip.win  { background: var(--ok-bg);   color: var(--ok); }
+
+  @media (max-width: 380px) {
+    .card { padding: 32px 18px 22px; border-radius: 20px; }
+    .input-row { flex-direction: column; }
+    #guessBtn { width: 100%; }
+  }
+
+  @media (min-width: 768px) {
+    .card { max-width: 480px; padding: 48px 40px 34px; }
+    .desc { font-size: 1rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+  <main class="card">
+    <h1>숫자 맞추기 게임 <span class="heart" aria-hidden="true">♥</span></h1>
+    <p class="desc">
+      컴퓨터가 <strong>1부터 100 사이</strong>의 숫자 하나를 골랐어요.<br>
+      숫자를 입력하고 <strong>확인</strong>을 눌러 맞혀보세요.
+    </p>
+
+    <div class="input-row" id="guessForm">
+      <input type="number" id="guessInput" inputmode="numeric"
+             step="1" placeholder="1 ~ 100"
+             aria-label="숫자 입력" autocomplete="off">
+      <button type="button" id="guessBtn">확인</button>
+    </div>
+
+    <div class="message" id="message" role="status" aria-live="polite">
+      숫자를 입력해 주세요
+    </div>
+
+    <p class="stats">시도 횟수 <b id="attempts">0</b>회</p>
+
+    <div class="history" id="history" aria-label="입력 기록"></div>
+
+    <button type="button" id="restartBtn">다시 시작하기</button>
+  </main>
+
+<script>
+  (function () {
+    var MIN = 1, MAX = 100;
+
+    var form       = document.getElementById('guessForm');
+    var input      = document.getElementById('guessInput');
+    var guessBtn   = document.getElementById('guessBtn');
+    var restartBtn = document.getElementById('restartBtn');
+    var messageEl  = document.getElementById('message');
+    var attemptsEl = document.getElementById('attempts');
+    var historyEl  = document.getElementById('history');
+
+    var answer, attempts, finished;
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function showMessage(text, type) {
+      messageEl.textContent = text;
+      messageEl.className = 'message' + (type ? ' ' + type : '');
+      // 애니메이션 재시작
+      void messageEl.offsetWidth;
+      messageEl.classList.add('pop');
+    }
+
+    function addChip(value, type) {
+      var chip = document.createElement('span');
+      chip.className = 'chip ' + type;
+      chip.textContent = value + (type === 'up' ? ' ↑' : type === 'down' ? ' ↓' : ' ✔');
+      historyEl.appendChild(chip);
+    }
+
+    function startGame() {
+      answer = randomInt(MIN, MAX);
+      attempts = 0;
+      finished = false;
+
+      attemptsEl.textContent = '0';
+      historyEl.innerHTML = '';
+      input.value = '';
+      input.disabled = false;
+      guessBtn.disabled = false;
+      restartBtn.classList.remove('highlight');
+      messageEl.className = 'message';
+      messageEl.textContent = '숫자를 입력해 주세요';
+      input.focus();
+    }
+
+    function handleGuess() {
+      if (finished) return;
+
+      var raw = input.value.trim();
+      var guess = Number(raw);
+
+      if (raw === '' || !Number.isInteger(guess) || guess < MIN || guess > MAX) {
+        showMessage('1부터 100 사이의 정수를 입력해 주세요', 'warn');
+        input.select();
+        return;
+      }
+
+      attempts++;
+      attemptsEl.textContent = attempts;
+
+      if (guess === answer) {
+        finished = true;
+        showMessage('🎉 정답입니다! ' + attempts + '번 만에 맞혔어요!', 'win');
+        addChip(guess, 'win');
+        input.disabled = true;
+        guessBtn.disabled = true;
+        restartBtn.classList.add('highlight');
+        restartBtn.focus();
+      } else if (guess > answer) {
+        showMessage('더 작은 숫자입니다 ⬇️', 'down');
+        addChip(guess, 'down');
+        input.value = '';
+        input.focus();
+      } else {
+        showMessage('더 큰 숫자입니다 ⬆️', 'up');
+        addChip(guess, 'up');
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    guessBtn.addEventListener('click', handleGuess);
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleGuess();
+      }
+    });
+    restartBtn.addEventListener('click', startGame);
+
+    startGame();
+  })();
+</script>
+</body>
+</html>
